@@ -1,0 +1,31 @@
+25 may 2026
+database.p : 
+    81 add doc_freq INTEGER
+
+indexer :
+    45 - 50
+    cur = conn.cursor()
+    term_id, doc_freq = cur.execute("SELECT id, doc_freq FROM terms WHERE term = %s", (term,))
+    if term_id is not None:
+        doc_freq = doc_freq + 1
+    else:
+        doc_freq = 1
+
+    71-113
+
+
+28 may 2026
+
+    check if page already exists 
+    if no -> doc_freq increment for each unique term
+    if yes -> 
+                1.get new terms set and old terms set
+                2.(new terms - old terms) -> doc_freq++
+                2.(old terms - new terms) -> doc_freq--
+                
+     get old terms : SELECT t.term
+FROM postings p
+JOIN terms t
+ON p.term_id = t.id
+WHERE p.page_id = %s;                
+------------------------

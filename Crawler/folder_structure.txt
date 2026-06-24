@@ -1,0 +1,105 @@
+    search_engine_project/
+│
+├── crawler/
+│   ├── crawler.py  --
+│   ├── extractor.py  --
+│   ├── robots_handler.py --
+│   └── scheduler.py   (future)
+│
+├── database/
+│   ├── database.py  --
+│   ├── schema.sql
+│   └── migrations/
+│
+├── indexing/
+│   ├── indexer.py --
+│   ├── tokenizer.py
+│   ├── bm25.py
+│   └── postings.py
+│
+├── semantic/
+│   ├── embeddings.py
+│   ├── vector_search.py
+│   └── multilingual.py
+│
+├── search/
+│   ├── search_engine.py
+│   ├── ranking.py
+│   ├── hybrid_ranker.py
+│   └── query_parser.py
+│
+├── api/
+│   ├── app.py
+│   └── routes.py
+│
+├── frontend/          (optional later)
+│
+├── tests/
+│
+├── config.py
+├── requirements.txt
+└── main.py
+
+
+crawler-system/
+│
+├── crawler/
+│   ├── crawler.py
+│   ├── scheduler.py
+│   ├── frontier.py
+│   ├── robots_handler.py
+│   └── url_normalizer.py
+│
+├── extractor/
+│   ├── extractor.py
+│   ├── content_cleaner.py
+│   └── language_detector.py
+│
+├── indexing/
+│   ├── indexer.py
+│   ├── tokenizer.py
+│   ├── postings.py
+│   └── term_processor.py
+│
+├── database/
+│   ├── database.py
+│   ├── schema.sql
+│   └── migrations/
+│
+├── utils/
+│
+├── config.py
+├── requirements.txt
+└── main.py
+
+
+search-engine/
+│
+├── search/
+│   ├── search_engine.py
+│   ├── query_parser.py
+│   ├── bm25.py
+│   ├── ranking.py
+│   └── hybrid_ranker.py
+│
+├── semantic/
+│   ├── embeddings.py
+│   ├── vector_search.py
+│   ├── multilingual.py
+│   └── reranker.py
+│
+├── api/
+│   ├── app.py
+│   ├── routes.py
+│   └── schemas.py
+│
+├── frontend/      (optional later)
+│
+├── evaluation/
+│   ├── metrics.py
+│   ├── benchmark.py
+│   └── experiments.py
+│
+├── config.py
+├── requirements.txt
+└── main.py

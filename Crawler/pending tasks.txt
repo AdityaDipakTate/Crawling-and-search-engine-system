@@ -1,0 +1,139 @@
+Current Status
+✅ Already Done
+Crawler completed
+PostgreSQL migration completed
+Incremental indexing implemented using content_hash
+Inverted index working:
+terms
+postings
+Separate repositories planned:
+crawler-system
+search-engine
+Search Engine Roadmap We Agreed On
+Query Parser
+    ↓
+Candidate Retrieval
+    ↓
+BM25 Ranking
+    ↓
+Semantic Search
+    ↓
+Hybrid Search
+What We Started Recently
+
+We began preparing the index for BM25.
+
+Schema change completed
+
+You added:
+
+terms(
+    id,
+    term,
+    doc_freq
+)
+Important Discovery
+
+Initially you tried updating doc_freq inside:
+
+get_or_create_term()
+
+and we found that's incorrect because:
+
+doc_freq
+≠ total occurrences
+
+doc_freq
+= number of documents containing term
+
+Example:
+
+python python python
+
+should produce:
+
+frequency = 3
+doc_freq = 1
+Bigger Issue You Identified
+
+You noticed:
+
+What happens when a page is recrawled?
+
+Excellent catch.
+
+Example:
+
+Old page:
+
+python tutorial
+
+New page:
+
+python guide
+
+Then:
+
+tutorial -> doc_freq -1
+guide    -> doc_freq +1
+python   -> unchanged
+
+So we realized:
+
+Before updating doc_freq
+
+you must:
+
+Check if page already exists
+Compare content hashes
+If unchanged → skip indexing
+If changed:
+fetch old terms from postings
+generate new terms
+compute:
+added_terms
+removed_terms
+update doc_freq accordingly
+The Last Question We Discussed
+
+You asked:
+
+"Do I need to check again if page already exists, content hash changed and then do computations?"
+
+Answer:
+
+YES.
+
+Your indexing flow should now be:
+
+Page Crawled
+     ↓
+Find page by URL
+     ↓
+Compare content_hash
+     ↓
+same? -----------------> skip
+     ↓ no
+Fetch old terms
+Generate new terms
+Compute added/removed terms
+Update doc_freq
+Replace postings
+Update page record
+The Very Next Task
+
+Implement proper doc_freq maintenance for changed pages.
+
+Before writing BM25 code, make sure:
+
+✅ doc_freq remains accurate after recrawls.
+
+Once that is working, we'll move to:
+
+Query Parser
+    ↓
+Candidate Retrieval
+    ↓
+BM25 Scoring
+
+That's exactly where the project was paused.
