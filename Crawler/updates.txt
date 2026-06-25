@@ -29,3 +29,61 @@ JOIN terms t
 ON p.term_id = t.id
 WHERE p.page_id = %s;                
 ------------------------
+
+
+
+
+
+
+what is remaining (25 june 2026)
+                USER QUERY
+                     │
+                     ▼
+            Query Parser
+                     │
+                     ▼
+          Query Normalization
+                     │
+                     ▼
+         Candidate Retrieval
+                     │
+                     ▼
+            BM25 Scoring
+                     │
+                     ▼
+              Rank Results
+                     │
+                     ▼
+              Return Top-K
+
+
+              Current Project Status
+✅ Phase 1 — Crawler
+Priority-based crawling
+URL normalization
+robots.txt
+Sitemap handling
+Content extraction
+Link graph
+
+Status: Complete
+
+✅ Phase 2 — Storage
+PostgreSQL migration
+Normalized schema
+Incremental page updates
+Content hashing
+
+Status: Complete
+
+✅ Phase 3 — Indexing
+Text preprocessing
+Inverted index
+Term frequencies
+Incremental indexing
+Correct doc_freq maintenance
+Posting updates
+
+Status: Complete
+
+At this point, your crawler has become a proper indexing system.

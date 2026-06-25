@@ -1,4 +1,5 @@
 import psycopg2
+from psycopg2 import errors
 from psycopg2 import pool
 from datetime import datetime
 
@@ -93,6 +94,44 @@ def init_db():
         """)
 
         conn.commit()
+
+        cur.execute("""
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_name = 'terms'
+          AND column_name = 'doc_freq'
+        """)
+        has_doc_freq = cur.fetchone() is not None
+
+        if not has_doc_freq:
+            try:
+                cur.execute("ALTER TABLE terms ADD COLUMN doc_freq INTEGER")
+                conn.commit()
+            except errors.InsufficientPrivilege as exc:
+                conn.rollback()
+                raise RuntimeError(
+                    "terms.doc_freq is missing and the database user cannot add it"
+                ) from exc
+
+        cur.execute("""
+        UPDATE terms AS t
+        SET doc_freq = counts.doc_freq
+        FROM (
+            SELECT term_id, COUNT(DISTINCT page_id) AS doc_freq
+            FROM postings
+            GROUP BY term_id
+        ) AS counts
+        WHERE t.id = counts.term_id
+        """)
+        cur.execute("UPDATE terms SET doc_freq = 0 WHERE doc_freq IS NULL")
+        conn.commit()
+
+        try:
+            cur.execute("ALTER TABLE terms ALTER COLUMN doc_freq SET DEFAULT 0")
+            cur.execute("ALTER TABLE terms ALTER COLUMN doc_freq SET NOT NULL")
+            conn.commit()
+        except errors.InsufficientPrivilege:
+            conn.rollback()
     finally:
         release_connection(conn)
 
@@ -115,9 +154,11 @@ def upsert_page(
         row = cur.fetchone()
 
         content_changed = False
+        is_new_page = False
         now = datetime.utcnow()
 
         if row is None:
+            is_new_page = True
             # INSERT new page
             cur.execute("""
             INSERT INTO pages (
@@ -136,7 +177,7 @@ def upsert_page(
             ))
 
             page_id = cur.fetchone()[0]
-            content_changed = content_hash is not None
+            content_changed = True
 
         else:
             page_id, old_hash = row
@@ -183,12 +224,13 @@ def upsert_page(
         print(
             f"[DB] url={url} | "
             f"hash={'None' if content_hash is None else 'REAL'} | "
-            f"content_changed={content_changed}"
+            f"content_changed={content_changed} | "
+            f"is_new_page={is_new_page}"
         )
 
-        return page_id, content_changed
+        return page_id, content_changed, is_new_page
     finally:
-        release_connection(conn)#?
+        release_connection(conn)
 
 
 # Utility
@@ -220,3 +262,45 @@ def insert_link(from_page_id, to_page_id):
         conn.commit()
     finally:
         release_connection(conn)
+
+def get_page_terms(conn, page_id):
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT t.term
+        FROM postings p
+        JOIN terms t
+        ON p.term_id = t.id
+        WHERE p.page_id = %s
+    """, (page_id,))
+
+    return {row[0] for row in cur.fetchall()}
+
+
+def delete_page_postings(conn, page_id):
+    cur = conn.cursor()
+
+    cur.execute("""
+        DELETE FROM postings
+        WHERE page_id = %s
+    """, (page_id,))
+
+
+def increment_doc_freq(conn, term):
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE terms
+        SET doc_freq = COALESCE(doc_freq, 0) + 1
+        WHERE term = %s
+    """, (term,))
+
+
+def decrement_doc_freq(conn, term):
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE terms
+        SET doc_freq = GREATEST(COALESCE(doc_freq, 0) - 1, 0)
+        WHERE term = %s
+    """, (term,))

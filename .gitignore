@@ -5,3 +5,4 @@ chinook.db
 crawler.db
 crawl_data.db   __pycache__/
 __pycache__/
+.venv/
