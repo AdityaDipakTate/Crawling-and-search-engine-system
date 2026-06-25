@@ -1,8 +1,14 @@
 # testing files
 test.py
+temp.py
 requirements.txt
 chinook.db
 crawler.db
-crawl_data.db   __pycache__/
+crawl_data.db
+crawler.db.backup
+*.db
+*.db.backup
+dump.sql
 __pycache__/
+*.py[cod]
 .venv/
